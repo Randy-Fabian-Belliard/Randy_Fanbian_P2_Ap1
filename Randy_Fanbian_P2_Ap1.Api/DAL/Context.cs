@@ -7,6 +7,8 @@ namespace Randy_Fanbian_P2_Ap1.Api.DAL
     public class Context : DbContext
     {
         public DbSet<Accesorios> Accesorios { get; set; }
+        public DbSet<Vehiculo> Vehiculo { get; set; }
+        
         public Context(DbContextOptions<Context> options) : base(options) { }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
