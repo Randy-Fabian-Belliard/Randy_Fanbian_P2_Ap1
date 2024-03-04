@@ -1,4 +1,12 @@
+using Microsoft.EntityFrameworkCore;
+using Randy_Fanbian_P2_Ap1.Api.DAL;
+
 var builder = WebApplication.CreateBuilder(args);
+
+var ConStr = builder.Configuration.GetConnectionString("ConStr");
+builder.Services.AddDbContextFactory<Context>(options =>
+	options.UseSqlite(ConStr)
+);
 
 // Add services to the container.
 
