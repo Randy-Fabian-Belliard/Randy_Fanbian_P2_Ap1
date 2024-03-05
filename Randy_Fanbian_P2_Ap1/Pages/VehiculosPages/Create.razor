@@ -26,27 +26,27 @@
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label" for="Precio">Precio</label>
+                    <label class="form-label" for="Precio">Costo</label>
                     <InputNumber @bind-Value=" vehiculo.Costo" class="form-control" />
                     <ValidationMessage For="@(() => vehiculo.Costo)" />
                 </div>
 
-                <div class="mb-3">
-                    <label class="form-label" for="Precio">Precio</label>
-                    <InputNumber @bind-Value=" vehiculo.Costo" class="form-control" />
-                    <ValidationMessage For="@(() => vehiculo.Costo)" />
-                </div>
                 <div class="mb-3">
                     <label class="form-label" for="Gasto">Gasto</label>
                     <InputNumber @bind-Value=" vehiculo.Gasto" class="form-control" />
                     <ValidationMessage For="@(() => vehiculo.Gasto)" />
                 </div>
-
+                
             </div>
 
-            <div class="card-footer d-flex justify-content-center">
+            <fieldset class="border-success border border-0">
+
+ 
+            </fieldset>
+
+                <div class="card-footer d-flex justify-content-center">
                 <div class="btn-group">
-                    <button type="submit" class="btn btn-outline-success">Crear <i class="oi oi-document" /></button>
+                    <button type="submit" class="btn btn-outline-success">Crear</button>
                 </div>
             </div>
         </div>
@@ -58,6 +58,24 @@
     [Parameter]
     public int VehiculoId { get ; set; }
     public Vehiculo vehiculo {get ; set; } = new Vehiculo();
+
+        public async Task Guardar()
+    {
+        using var response = await httpClient.PostAsJsonAsync("api/Vehiculo", Vehiculos);
+        if (!response.IsSuccessStatusCode)
+        {
+            return;
+        }
+        var VehiculosDevuelto = await response.Content.ReadFromJsonAsync<Vehiculo>();
+        if (VehiculosDevuelto is not null)
+        {
+            Vehiculo = VehiculosDevuelto;
+            StateHasChanged();
+            Nuevo();
+        }
+    }
  
     
 }
+
+
