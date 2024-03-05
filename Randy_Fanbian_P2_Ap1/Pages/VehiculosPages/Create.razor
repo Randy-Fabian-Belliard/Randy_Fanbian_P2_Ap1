@@ -1,0 +1,51 @@
+﻿@page "/Create"
+@inject HttpClient httpClient
+@inject NavigationManager NavigationManager
+
+
+<EditForm Model="vehiculo" >
+    <DataAnnotationsValidator />
+
+    <div class="container">
+        <div class="card shadow-lg">
+            <div class="card-header">
+                <h3>Create</h3>
+            </div>
+            <div class=card-body>
+
+                <div class="mb-3">
+                    <label class="form-label" for="Fecha"> Fecha:</label>
+                    <InputDate @bind-Value="vehiculo.Fecha " class="form-control"style="max-width: 180px;" />
+                    <ValidationMessage For="@(() => vehiculo.Fecha )" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="Solicitado Por">Descripcion:</label>
+                    <InputText @bind-Value="vehiculo.Descripcion " class="form-control"  />
+                    <ValidationMessage For="@(() => vehiculo.Descripcion )" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="Asunto">Precio</label>
+                    <InputNumber @bind-Value=" vehiculo.Precio" class="form-control" />
+                    <ValidationMessage For="@(() => vehiculo.Precio)" />
+                </div>
+            </div>
+
+            <div class="card-footer d-flex justify-content-center">
+                <div class="btn-group">
+                    <button type="submit" class="btn btn-outline-success">Crear <i class="oi oi-document" /></button>
+                </div>
+            </div>
+        </div>
+    </div>
+</EditForm>
+
+@code{
+
+    [Parameter]
+    public int VehiculoId { get ; set; }
+    public Vehiculo vehiculo {get ; set; } = new Vehiculo();
+ 
+    
+}
