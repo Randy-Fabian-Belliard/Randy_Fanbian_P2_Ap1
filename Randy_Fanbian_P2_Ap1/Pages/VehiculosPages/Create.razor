@@ -20,16 +20,28 @@
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label" for="Solicitado Por">Descripcion:</label>
+                    <label class="form-label" for="Descripcion">Descripcion:</label>
                     <InputText @bind-Value="vehiculo.Descripcion " class="form-control"  />
                     <ValidationMessage For="@(() => vehiculo.Descripcion )" />
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label" for="Asunto">Precio</label>
+                    <label class="form-label" for="Precio">Precio</label>
                     <InputNumber @bind-Value=" vehiculo.Costo" class="form-control" />
                     <ValidationMessage For="@(() => vehiculo.Costo)" />
                 </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="Precio">Precio</label>
+                    <InputNumber @bind-Value=" vehiculo.Costo" class="form-control" />
+                    <ValidationMessage For="@(() => vehiculo.Costo)" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="Gasto">Gasto</label>
+                    <InputNumber @bind-Value=" vehiculo.Gasto" class="form-control" />
+                    <ValidationMessage For="@(() => vehiculo.Gasto)" />
+                </div>
+
             </div>
 
             <div class="card-footer d-flex justify-content-center">
