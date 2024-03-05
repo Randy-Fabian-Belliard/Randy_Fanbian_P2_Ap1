@@ -15,9 +15,11 @@ namespace Randy_Fanbian_P2_Ap1.Models
             [Required(ErrorMessage = "Este campo es requerido")]
             public string? Descripcion { get; set; }
         
-            [Required(ErrorMessage = "Este campo es requerido")]
             [Range(1, int.MaxValue, ErrorMessage = "El campo debe ser mayor que cero")]
-            public decimal Precio { get; set; }
+            public decimal Costo { get; set; }
+
+            [Range(1, int.MaxValue, ErrorMessage = "El campo debe ser mayor que cero")]
+            public decimal Gasto { get; set; }
 
             [ForeignKey("VehiculoId")]
             public List<VehiculoDetalle> VehiculoDetalle { get; set; } = new List<VehiculoDetalle>();

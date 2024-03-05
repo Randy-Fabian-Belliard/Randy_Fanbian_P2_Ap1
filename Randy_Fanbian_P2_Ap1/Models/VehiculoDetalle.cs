@@ -16,7 +16,7 @@ namespace Randy_Fanbian_P2_Ap1.Models
         public int AccesorioId { get; set; }
 
         [Required(ErrorMessage = "Este campo es requerido")]
-        public decimal ValorId { get; set; }
+        public decimal Valor { get; set; }
 
     }
 }
