@@ -32,7 +32,15 @@ namespace Randy_Fanbian_P2_Ap1.Api.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<Vehiculo>> GetVehiculo(int id)
         {
-            var vehiculo = await _context.Vehiculo.FindAsync(id);
+            if (_context.Vehiculo == null)
+            {
+                return NotFound();
+            }
+
+            var vehiculo = await _context.Vehiculo
+            .Include(c => c.VehiculoDetalle)
+            .Where(c => c.VehiculoId == id)
+            .FirstOrDefaultAsync();
 
             if (vehiculo == null)
             {
@@ -78,10 +86,14 @@ namespace Randy_Fanbian_P2_Ap1.Api.Controllers
         [HttpPost]
         public async Task<ActionResult<Vehiculo>> PostVehiculo(Vehiculo vehiculo)
         {
-            _context.Vehiculo.Add(vehiculo);
+            if (!VehiculoExists(vehiculo.VehiculoId))
+                _context.Vehiculo.Add(vehiculo);
+            else
+                _context.Vehiculo.Update(vehiculo);
+
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetVehiculo", new { id = vehiculo.VehiculoId }, vehiculo);
+            return Ok(vehiculo);
         }
 
         // DELETE: api/Vehiculo/5
