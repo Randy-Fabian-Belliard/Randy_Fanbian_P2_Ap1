@@ -19,6 +19,7 @@ namespace Randy_Fanbian_P2_Ap1.Api.DAL
         modelBuilder.Entity<Accesorios>().HasData(new Accesorios() { AccesorioId = 4, Descripcion = "Sun Roof" });
         modelBuilder.Entity<Accesorios>().HasData(new Accesorios() { AccesorioId = 5, Descripcion = "Aros de lujo" });
         }
+        public DbSet<Randy_Fanbian_P2_Ap1.Models.VehiculoDetalle> VehiculoDetalle { get; set; } = default!;
     }
 
 }
