@@ -2,8 +2,8 @@
 @inject HttpClient httpClient
 @inject NavigationManager NavigationManager
 
-
-<EditForm Model="vehiculo" OnValidSubmit="Guardar">
+<PageTitle>Create</PageTitle>
+<EditForm Model="vehiculo" >
     <DataAnnotationsValidator />
 
     <div class="container mt-3">
@@ -103,7 +103,7 @@
 
             <div class="card-footer d-flex justify-content-center mt-3">
                 <div class="btn-group">
-                    <button type="submit" class="btn btn-outline-success"><i class="bi bi-floppy"></i> Crear</button>
+                    <button type="submit" class="btn btn-outline-success" @onclick="Guardar"><i class="bi bi-floppy"></i> Crear</button>
                 </div>
             </div>
         </div>
@@ -128,10 +128,17 @@
     protected override async Task OnInitializedAsync()
     {
         await CargarAccesorios();
+
     }
 
     public async Task Guardar()
     {
+        if (vehiculo.VehiculoDetalle.Count == 0)
+        {
+            VD += "El detalle tiene que estar lleno.";
+            return;
+        }
+
         using var response = await httpClient.PostAsJsonAsync("api/Vehiculo", vehiculo);
         if (!response.IsSuccessStatusCode)
         {
@@ -142,9 +149,10 @@
         {
             vehiculo = VehiculosDevuelto;
             StateHasChanged();
-            Nuevo();
         }
+        Nuevo();
     }
+
 
     private async Task CargarAccesorios()
     {
@@ -175,13 +183,29 @@
         StateHasChanged();
     }
 
-    public void RemoverDetalle(VehiculoDetalle vehiculoDetalle)
+    public void RemoverDetalles(VehiculoDetalle vehiculoDetalle)
     {
         AccesorioDetalle = vehiculoDetalle.AccesorioId;
         ValorDetalle = vehiculoDetalle.Valor;
         vehiculo.VehiculoDetalle.Remove(vehiculoDetalle);
         vehiculo.Gasto = vehiculo.VehiculoDetalle.Sum(d => d.Valor);
     }
+    public void RemoverDetalle(VehiculoDetalle vehiculoDetalle)
+    {
+        AccesorioDetalle = vehiculoDetalle.AccesorioId;
+        ValorDetalle = vehiculoDetalle.Valor;
+        vehiculo.VehiculoDetalle.Remove(vehiculoDetalle);
+
+        if (vehiculo.VehiculoDetalle.Count == 0)
+        {
+            vehiculo.Gasto = 0;
+        }
+        else
+        {
+            vehiculo.Gasto = vehiculo.VehiculoDetalle.Sum(d => d.Valor);
+        }
+    }
+
 
     public bool ValidarDetalle()
     {
@@ -200,15 +224,15 @@
         return VD.Length == 0;
     }
 
-    public void Nuevo()
-    {
-        vehiculo = new Vehiculo
-            {
-                VehiculoDetalle = new List<VehiculoDetalle>() 
-            };
-        VD = string.Empty;
-        AccesorioDetalle = 0;
-        ValorDetalle = 0;
-    }
+       public void Nuevo()
+        {
+            vehiculo = new Vehiculo
+                {
+                    VehiculoDetalle = new List<VehiculoDetalle>() 
+                };
+            VD = string.Empty;
+            AccesorioDetalle = 0;
+            ValorDetalle = 0;
+        }
 
 }
