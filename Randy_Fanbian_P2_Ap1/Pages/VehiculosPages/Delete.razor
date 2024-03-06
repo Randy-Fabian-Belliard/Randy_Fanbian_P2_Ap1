@@ -1,8 +1,139 @@
-﻿@page "/Delete{ModeloId:int}"
+﻿@page "/Delete/{VehiculoId:int}"
+@inject HttpClient httpClient
 @inject NavigationManager NavigationManager
 
-<h3>Delete</h3>
+
+<EditForm Model="vehiculo" OnValidSubmit="Eliminar">
+    <DataAnnotationsValidator />
+
+    <div class="container mt-3">
+        <div class="card shadow-lg">
+            <div class="card-header bg-danger text-white">
+                <h3>¿Estás seguro de que quieres eliminar?</h3>
+            </div>
+            <div class="card-body">
+
+                <div class="mb-3">
+                    <label class="form-label" for="Fecha">Fecha:</label>
+                    <div class="col-2">
+                        <InputDate @bind-Value="vehiculo.Fecha" class="form-control" disabled />
+                    </div>
+                    <ValidationMessage For="@(() => vehiculo.Fecha)" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="Descripcion">Descripción:</label>
+                    <div class="col-6">
+                        <textarea @bind="vehiculo.Descripcion" class="form-control" rows="3" disabled></textarea>
+                    </div>
+                    <ValidationMessage For="@(() => vehiculo.Descripcion)" />
+                </div>
+
+                <div class="mb-6 row">
+                    <div class="col-2">
+                        <label class="form-label" for="Precio">Costo:</label>
+                        <InputNumber @bind-Value="vehiculo.Costo" class="form-control" disabled />
+                        <ValidationMessage For="@(() => vehiculo.Costo)" />
+                    </div>
+
+                    <div class="col-2">
+                        <label class="form-label" for="Gasto">Gasto:</label>
+                        <InputNumber @bind-Value="vehiculo.Gasto" class="form-control" disabled />
+                        <ValidationMessage For="@(() => vehiculo.Gasto)" />
+                    </div>
+                </div>
+
+            </div>
+
+            <fieldset class="border-success border border-3 p-3">
+
+                <table class="table table-bordered table-light">
+                    <thead class="thead">
+                        <tr class="table">
+                            <th>Accesorio</th>
+                            <th>Valor</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var detalle in vehiculo.VehiculoDetalle)
+                        {
+                            var accesorio = listaAccesorios.FirstOrDefault(a => a.AccesorioId == detalle.AccesorioId);
+
+                            <tr>
+                                <td>@accesorio?.Descripcion</td>
+                                <td>@detalle.Valor.ToString("N2")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+
+            </fieldset>
+
+            <div class="card-footer d-flex justify-content-center mt-3">
+                <div class="btn-group">
+                    <button type="submit" class="btn btn-outline-danger"><i class="bi bi-trash"></i> Eliminar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</EditForm>
+
+
 
 @code {
+
+    [Parameter]
+    public int VehiculoId { get; set; }
+    public string? VD { get; set; }
+    public VehiculoDetalle vehiculoDetalle { get; set; } = new VehiculoDetalle();
+    public Vehiculo vehiculo { get; set; } = new Vehiculo();
+    public List<Accesorios> L_Accesorios { get; set; } = new List<Accesorios>();
+    public IEnumerable<Accesorios> listaAccesorios { get; set; } = Enumerable.Empty<Accesorios>();
+    public int AccesorioSeleccionada { get; set; }
+    public int AccesorioDetalle { get; set; }
+    public decimal ValorDetalle { get; set; }
+    public string Mensaje { get; set; } = string.Empty;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (VehiculoId > 0)
+        {
+            this.vehiculo.VehiculoId = VehiculoId;
+            await Buscar();
+            await CargarAccesorios();
+        }
+    }
+
+    public async Task Buscar()
+    {
+        var VehiculoEncontrado = await httpClient.GetFromJsonAsync<Vehiculo>($"api/Vehiculo/{vehiculo.VehiculoId}");
+        if (VehiculoEncontrado != null)
+        {
+            this.vehiculo = VehiculoEncontrado;
+            StateHasChanged();
+        }
+    }
+
+    public async Task Eliminar()
+    {
+        using var response = await httpClient.DeleteAsync($"api/Vehiculo/{vehiculo.VehiculoId}");
+        if (!response.IsSuccessStatusCode)
+        {
+            Mensaje = response.ReasonPhrase ?? "error";
+            return;
+        }
+        else
+        NavigationManager.NavigateTo("/Index");
+    }
+
+    private async Task CargarAccesorios()
+    {
+        var AccesoriosEncontrados = await httpClient.GetFromJsonAsync<IEnumerable<Accesorios>>("api/Accesorios");
+
+        if (AccesoriosEncontrados != null)
+            listaAccesorios = AccesoriosEncontrados;
+
+    }
 
 }
