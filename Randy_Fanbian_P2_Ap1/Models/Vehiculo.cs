@@ -17,8 +17,6 @@ namespace Randy_Fanbian_P2_Ap1.Models
 
             [Range(1, (double)decimal.MaxValue, ErrorMessage = "El campo debe ser mayor que cero")]
             public decimal Costo { get; set; }
-
-            [Range(1, (double)decimal.MaxValue, ErrorMessage = "El campo debe ser mayor que cero")]
             public decimal Gasto { get; set; }
 
             [ForeignKey("VehiculoId")]
