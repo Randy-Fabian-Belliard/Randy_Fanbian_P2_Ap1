@@ -1,8 +1,96 @@
-﻿@page "/View/{ModeloId:int}"
+﻿@page "/View/{VehiculoId:int}"
 @inject NavigationManager NavigationManager
+@inject HttpClient httpClient
 
-<h3>View</h3>
+<PageTitle>Detalle de Vehículo</PageTitle>
+
+@if (vehiculo != null)
+{
+    <div class="card">
+        <div class="card-header">
+            <h2>Detalles del Vehículo</h2>
+        </div>
+        <div class="card-body">
+            <div>
+                <strong>Vehículo ID:</strong> @vehiculo.VehiculoId
+            </div>
+            <div>
+                <strong>Fecha:</strong> @vehiculo.Fecha.ToShortDateString()
+            </div>
+            <div>
+                <strong>Descripción:</strong> @vehiculo.Descripcion
+            </div>
+            <div>
+                <strong>Costo:</strong> @vehiculo.Costo.ToString("N2")
+            </div>
+            <div>
+                <strong>Gasto:</strong> @vehiculo.Gasto.ToString("N2")
+            </div>
+
+            <hr />
+
+            <h3>Detalles del Vehículo</h3>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Accesorio</th>
+                        <th>Valor</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var detalle in vehiculo.VehiculoDetalle)
+                    {
+                        var accesorio = listaAccesorios.FirstOrDefault(a => a.AccesorioId == detalle.AccesorioId);
+                        <tr>
+                            <td>@(accesorio?.Descripcion)</td>
+                            <td>@detalle.Valor.ToString("N2")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <div class="card-footer d-flex justify-content-center mt-3">
+            <div class="btn-group">
+                <button class="btn btn-outline-primary" @onclick="Volver"><i class="bi bi-box-arrow-left"></i> Volver</button>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <p>Cargando...</p>
+}
+
 
 @code {
 
+
+    [Parameter]
+    public int VehiculoId { get; set; }
+    public IEnumerable<Accesorios> listaAccesorios { get; set; } = Enumerable.Empty<Accesorios>();
+    private Vehiculo vehiculo;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarVehiculo();
+        await CargarAccesorios();
+    }
+
+    async Task CargarVehiculo()
+    {
+        vehiculo = await httpClient.GetFromJsonAsync<Vehiculo>($"api/Vehiculo/{VehiculoId}");
+    }
+
+    void Volver()
+    {
+        NavigationManager.NavigateTo("/Index");
+    }
+
+    private async Task CargarAccesorios()
+    {
+        var AccesoriosEncontrados = await httpClient.GetFromJsonAsync<IEnumerable<Accesorios>>("api/Accesorios");
+
+        if (AccesoriosEncontrados != null)
+            listaAccesorios = AccesoriosEncontrados;
+    }
 }
