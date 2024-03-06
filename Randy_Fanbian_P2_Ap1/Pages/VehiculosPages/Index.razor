@@ -1,0 +1,178 @@
+﻿@page "/Index"
+@inject HttpClient httpClient
+@inject NavigationManager NavigationManager
+
+<PageTitle>Consulta</PageTitle>
+<div class="card-header">
+    <h2>Consulta </h2>
+    <div class='row'>
+        <div class='col-md-3'>
+            <label>Desde</label>
+            <InputDate @bind-Value="FechaInicial" class="form-control"></InputDate>
+        </div>
+        <div class='col-md-3'>
+            <label>Hasta</label>
+            <div class="finalDate d-flex">
+                <div class="me-2">
+                    <InputDate @bind-Value="FechaFinal" class="form-control"></InputDate>
+                </div>
+                <button type="button" class="btn btn-outline-primary bi bi-arrow-clockwise" @onclick="ResetDate"></button>
+                <button type="button" @onclick="Filtrar" class=" btn btn-outline-primary bi bi-search"></button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class='row'>
+    @* Filtro *@
+    <div class='col-md-3'>
+        <label>Filtro</label>
+        <div class="filter-box d-flex">
+            <div class="me-2">
+                <InputSelect class="form-select" @bind-Value="opcion">
+                    <option value=0>Sin filtro</option>
+                    <option value=1>Vehiculo Id</option>
+                </InputSelect>
+            </div>
+            <button type="button" class="btn btn-outline-primary bi bi-arrow-clockwise" @onclick="ReiniciarFiltro"></button>
+        </div>
+    </div>
+
+    <div class='col-md-6'>
+        @* Criterio *@
+        <label>Criterio</label>
+        <div class="col-md-6">
+            <div class="input-group mb-3">
+                <input id="c_search" type="text" class="form-control" @bind="criterio" disabled="@activarCriterio" />
+                <button type="button" @onclick="Filtrar" class=" btn btn-outline-primary bi bi-search" 
+                    data-bs-toggle="tooltip"  data-bs-placement="top" 
+                    data-bs-custom-class="custom-tooltip"
+                    data-bs-title="Para filtrar por Id primero tienes que selecionar las fechas.">
+                </button>
+            </div>
+        </div>
+    </div>
+
+</div>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Vehiculo ID</th>
+            <th>Fecha</th>
+            <th>Descripción</th>
+            <th>Costo</th>
+            <th>Gasto</th>
+            <th>Editar</th>
+            <th>Eliminar</th>
+            <th>Detalle</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var vehiculo in ListaVehiculos)
+        {
+            <tr>
+                <td>@vehiculo.VehiculoId</td>
+                <td>@vehiculo.Fecha.ToShortDateString()</td>
+                <td>@vehiculo.Descripcion</td>
+                <td>@vehiculo.Costo.ToString("N2")</td>
+                <td>@vehiculo.Gasto.ToString("N2")</td>
+                <td><a href="/Edit/@vehiculo.VehiculoId" class="btn btn-outline-success"><i class="bi bi-pencil-square"></i></a></td>
+                <td><a href="/Delete/@vehiculo.VehiculoId" class="btn btn-outline-danger"><i class="bi bi-file-earmark-x"></i></a></td>
+                <td><a href="/View/@vehiculo.VehiculoId" class="btn btn-outline-primary"><i class="bi bi-ticket-detailed"></i></a></td>
+            </tr>
+        }
+    </tbody>
+</table>
+<div class='col-md-16'>
+    <button type="button" class="btn btn-outline-primary bi bi-list" @onclick="MostrarTodo"> Mostrar Todo</button>
+    <a href="/Create" class="btn btn-outline-success"><i class="bi bi-pencil-square"></i> Registro</a>
+</div>
+
+@code {
+    public List<Vehiculo> ListaVehiculos { get; set; } = new List<Vehiculo>();
+    public DateTime FechaInicial { get; set; }
+    public DateTime FechaFinal { get; set; }
+    public int opcion { get; set; }
+    public bool activarCriterio { get { return opcion == 0; } }
+    public string criterio { get; set; } = string.Empty;
+
+    public decimal SumaMontos { get; set; }
+    public int Conteo { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarVehiculos();
+    }
+
+    async Task CargarVehiculos()
+    {
+        ListaVehiculos = await httpClient.GetFromJsonAsync<List<Vehiculo>>("api/Vehiculo");
+    }
+
+    async Task Filtrar()
+    {
+        switch (opcion)
+        {
+            case 0:
+                {
+                    await SinFiltro();
+                    await IncluirFecha();
+                    break;
+                }
+            case 1:
+                {
+                    await FiltrarPorId();
+                    break;
+                }
+        }
+    }
+
+    async Task SinFiltro()
+    {
+        ListaVehiculos = await httpClient.GetFromJsonAsync<List<Vehiculo>>("api/Vehiculo");
+        criterio = string.Empty;
+    }
+
+    async Task FiltrarPorId()
+    {
+        ListaVehiculos = await httpClient.GetFromJsonAsync<List<Vehiculo>>("api/Vehiculo");
+
+        int IdBuscado = 0;
+        if (int.TryParse(criterio, out IdBuscado))
+        {
+            ListaVehiculos = ListaVehiculos
+                .Where(v => v.VehiculoId == IdBuscado )
+                .ToList();
+        }
+    }
+
+    async Task IncluirFecha()
+    {
+        ListaVehiculos = await httpClient.GetFromJsonAsync<List<Vehiculo>>("api/Vehiculo");
+
+        ListaVehiculos = ListaVehiculos
+            .Where(v => v.Fecha >= FechaInicial && v.Fecha <= FechaFinal)
+            .ToList();
+    }
+
+    void ReiniciarFiltro()
+    {
+        if (opcion != 0)
+        {
+            opcion = 0;
+            criterio = string.Empty;
+        }
+    }
+
+    void ResetDate()
+    {
+        FechaInicial = DateTime.Today;
+        FechaFinal = DateTime.Today;
+    }
+
+    async Task MostrarTodo()
+    {
+        await SinFiltro();
+    }
+}
+
