@@ -8,14 +8,12 @@ namespace Randy_Fanbian_P2_Ap1.Models
 
         [Key]
         public int VehiculoDetalleId { get; set; }
-
         [Required(ErrorMessage = "Este campo es requerido")]
         public int VehiculoId { get; set; }
-
         [Required(ErrorMessage = "Este campo es requerido")]
         public int AccesorioId { get; set; }
 
-        [Required(ErrorMessage = "Este campo es requerido")]
+        [Range(1, (double)decimal.MaxValue, ErrorMessage = "El campo debe ser mayor que cero")]
         public decimal Valor { get; set; }
 
     }
