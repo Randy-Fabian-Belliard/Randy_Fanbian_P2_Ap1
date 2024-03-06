@@ -2,128 +2,87 @@
 @inject HttpClient httpClient
 @inject NavigationManager NavigationManager
 
+<PageTitle>Eliminar Vehículo</PageTitle>
 
-<EditForm Model="vehiculo" OnValidSubmit="Eliminar">
-    <DataAnnotationsValidator />
-
-    <div class="container mt-3">
-        <div class="card shadow-lg">
-            <div class="card-header bg-danger text-white">
-                <h3>¿Estás seguro de que quieres eliminar?</h3>
+@if (vehiculo != null)
+{
+    <div class="card">
+        <div class="card-header bg-danger text-white">
+            <h2>¿Estas seguro de que quieres eliminar?</h2>
+        </div>
+        <div class="card-body">
+            <div>
+                <strong>Vehículo ID:</strong> @vehiculo.VehiculoId
             </div>
-            <div class="card-body">
-
-                <div class="mb-3">
-                    <label class="form-label" for="Fecha">Fecha:</label>
-                    <div class="col-2">
-                        <InputDate @bind-Value="vehiculo.Fecha" class="form-control" disabled />
-                    </div>
-                    <ValidationMessage For="@(() => vehiculo.Fecha)" />
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label" for="Descripcion">Descripción:</label>
-                    <div class="col-6">
-                        <textarea @bind="vehiculo.Descripcion" class="form-control" rows="3" disabled></textarea>
-                    </div>
-                    <ValidationMessage For="@(() => vehiculo.Descripcion)" />
-                </div>
-
-                <div class="mb-6 row">
-                    <div class="col-2">
-                        <label class="form-label" for="Precio">Costo:</label>
-                        <InputNumber @bind-Value="vehiculo.Costo" class="form-control" disabled />
-                        <ValidationMessage For="@(() => vehiculo.Costo)" />
-                    </div>
-
-                    <div class="col-2">
-                        <label class="form-label" for="Gasto">Gasto:</label>
-                        <InputNumber @bind-Value="vehiculo.Gasto" class="form-control" disabled />
-                        <ValidationMessage For="@(() => vehiculo.Gasto)" />
-                    </div>
-                </div>
-
+            <div>
+                <strong>Fecha:</strong> @vehiculo.Fecha.ToShortDateString()
+            </div>
+            <div>
+                <strong>Descripción:</strong> @vehiculo.Descripcion
+            </div>
+            <div>
+                <strong>Costo:</strong> @vehiculo.Costo.ToString("N2")
+            </div>
+            <div>
+                <strong>Gasto:</strong> @vehiculo.Gasto.ToString("N2")
             </div>
 
-            <fieldset class="border-success border border-3 p-3">
+            <hr />
 
-                <table class="table table-bordered table-light">
-                    <thead class="thead">
-                        <tr class="table">
-                            <th>Accesorio</th>
-                            <th>Valor</th>
+            <h3>Detalles del Vehículo</h3>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Accesorio</th>
+                        <th>Valor</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var detalle in vehiculo.VehiculoDetalle)
+                    {
+                        var accesorio = listaAccesorios.FirstOrDefault(a => a.AccesorioId == detalle.AccesorioId);
+                        <tr>
+                            <td>@accesorio?.Descripcion</td>
+                            <td>@detalle.Valor.ToString("N2")</td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var detalle in vehiculo.VehiculoDetalle)
-                        {
-                            var accesorio = listaAccesorios.FirstOrDefault(a => a.AccesorioId == detalle.AccesorioId);
-
-                            <tr>
-                                <td>@accesorio?.Descripcion</td>
-                                <td>@detalle.Valor.ToString("N2")</td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-
-            </fieldset>
-
-            <div class="card-footer d-flex justify-content-center mt-3">
-                <div class="btn-group">
-                    <button type="submit" class="btn btn-outline-danger"><i class="bi bi-trash"></i> Eliminar</button>
-                </div>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <div class="card-footer d-flex justify-content-center mt-3">
+            <div class="btn-group">
+                <button class="btn btn-outline-primary" @onclick="Volver"><i class="bi bi-box-arrow-left"></i> Volver</button>
+                <button class="btn btn-outline-danger ms-2" @onclick="Eliminar"><i class="bi bi-trash"></i> Eliminar</button> 
             </div>
         </div>
     </div>
-</EditForm>
 
-
+}
+else
+{
+    <p>Cargando...</p>
+}
 
 @code {
 
     [Parameter]
     public int VehiculoId { get; set; }
-    public string? VD { get; set; }
-    public VehiculoDetalle vehiculoDetalle { get; set; } = new VehiculoDetalle();
-    public Vehiculo vehiculo { get; set; } = new Vehiculo();
-    public List<Accesorios> L_Accesorios { get; set; } = new List<Accesorios>();
     public IEnumerable<Accesorios> listaAccesorios { get; set; } = Enumerable.Empty<Accesorios>();
-    public int AccesorioSeleccionada { get; set; }
-    public int AccesorioDetalle { get; set; }
-    public decimal ValorDetalle { get; set; }
-    public string Mensaje { get; set; } = string.Empty;
-
+    private Vehiculo vehiculo;
 
     protected override async Task OnInitializedAsync()
     {
-        if (VehiculoId > 0)
-        {
-            this.vehiculo.VehiculoId = VehiculoId;
-            await Buscar();
-            await CargarAccesorios();
-        }
+        await CargarVehiculo();
+        await CargarAccesorios();
     }
 
-    public async Task Buscar()
+    async Task CargarVehiculo()
     {
-        var VehiculoEncontrado = await httpClient.GetFromJsonAsync<Vehiculo>($"api/Vehiculo/{vehiculo.VehiculoId}");
-        if (VehiculoEncontrado != null)
-        {
-            this.vehiculo = VehiculoEncontrado;
-            StateHasChanged();
-        }
+        vehiculo = await httpClient.GetFromJsonAsync<Vehiculo>($"api/Vehiculo/{VehiculoId}");
     }
 
-    public async Task Eliminar()
+    void Volver()
     {
-        using var response = await httpClient.DeleteAsync($"api/Vehiculo/{vehiculo.VehiculoId}");
-        if (!response.IsSuccessStatusCode)
-        {
-            Mensaje = response.ReasonPhrase ?? "error";
-            return;
-        }
-        else
         NavigationManager.NavigateTo("/Index");
     }
 
@@ -133,7 +92,15 @@
 
         if (AccesoriosEncontrados != null)
             listaAccesorios = AccesoriosEncontrados;
-
     }
 
+    async Task Eliminar()
+    {
+        using var response = await httpClient.DeleteAsync($"api/Vehiculo/{vehiculo.VehiculoId}");
+        if (!response.IsSuccessStatusCode)
+        {
+            return;
+        }
+       NavigationManager.NavigateTo("/Index");
+    }
 }
