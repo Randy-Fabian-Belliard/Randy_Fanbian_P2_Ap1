@@ -183,13 +183,6 @@
         StateHasChanged();
     }
 
-    public void RemoverDetalles(VehiculoDetalle vehiculoDetalle)
-    {
-        AccesorioDetalle = vehiculoDetalle.AccesorioId;
-        ValorDetalle = vehiculoDetalle.Valor;
-        vehiculo.VehiculoDetalle.Remove(vehiculoDetalle);
-        vehiculo.Gasto = vehiculo.VehiculoDetalle.Sum(d => d.Valor);
-    }
     public void RemoverDetalle(VehiculoDetalle vehiculoDetalle)
     {
         AccesorioDetalle = vehiculoDetalle.AccesorioId;
@@ -234,5 +227,6 @@
             AccesorioDetalle = 0;
             ValorDetalle = 0;
         }
+
 
 }
